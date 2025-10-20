@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Diwali RD SOFA MAKER</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: radial-gradient(ellipse at bottom, #0a0f1a 0%, #000 100%);
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Poppins', sans-serif;
+    color: gold;
+  }
+
+  .main-text {
+    position: absolute;
+    text-align: center;
+    z-index: 10;
+  }
+
+  h1 {
+    font-size: 4em;
+    text-shadow: 0 0 20px gold, 0 0 40px orange, 0 0 60px gold;
+    animation: glow 2s infinite alternate;
+  }
+
+  h2 {
+    font-size: 2em;
+    margin-top: 20px;
+    text-shadow: 0 0 15px gold, 0 0 30px orange;
+    animation: glow 2s infinite alternate;
+  }
+
+  @keyframes glow {
+    from { text-shadow: 0 0 10px gold, 0 0 20px orange; }
+    to { text-shadow: 0 0 30px gold, 0 0 60px orange, 0 0 90px gold; }
+  }
+
+  canvas { position: absolute; top: 0; left: 0; }
+
+  /* Diyas */
+  .diyas {
+    position: absolute;
+    bottom: 40px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    gap: 60px;
+    z-index: 5;
+  }
+
+  .diya {
+    position: relative;
+    width: 60px;
+    height: 40px;
+    background: linear-gradient(to top, #663300, #cc6600);
+    border-radius: 0 0 40px 40px;
+    box-shadow: 0 0 10px #ff9900 inset;
+  }
+
+  .flame {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 18px;
+    height: 28px;
+    background: radial-gradient(ellipse at center, #ffff66 0%, #ff9900 60%, transparent 80%);
+    border-radius: 50%;
+    animation: flicker 0.15s infinite alternate;
+  }
+
+  @keyframes flicker {
+    from { transform: translateX(-50%) scale(1); opacity: 0.9; }
+    to { transform: translateX(-50%) scale(1.2); opacity: 1; }
+  }
+
+  /* Sound Toggle Button */
+  #soundToggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255,215,0,0.1);
+    border: 2px solid gold;
+    border-radius: 30px;
+    padding: 8px 20px;
+    color: gold;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background 0.3s;
+    z-index: 10;
+  }
+  #soundToggle:hover { background: rgba(255,215,0,0.3); }
+
+  /* Logo (Left) */
+  .logo {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    z-index: 10;
+  }
+  .logo img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    box-shadow: 0 0 20px gold, 0 0 40px orange;
+    animation: glowPulse 2s infinite alternate;
+  }
+  .logo-text {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: gold;
+    text-shadow: 0 0 10px orange, 0 0 20px gold;
+    margin-left: 10px;
+  }
+  @keyframes glowPulse {
+    from { box-shadow: 0 0 15px gold, 0 0 30px orange; transform: scale(1); }
+    to { box-shadow: 0 0 30px gold, 0 0 60px orange; transform: scale(1.05); }
+  }
+</style>
+</head>
+<body>
+  <div class="main-text">
+    <h1>Happy Diwali</h1>
+    <h2>o All Of My Family</h2>
+  </div>
+
+  <div class="logo">
+    <img src="https://i.postimg.cc/PqxR6hWM/SAGAR.jpg" alt="Ajsagar Logo">
+    <div class="logo-text">Ajsagar</div>
+  </div>
+
+  <button id="soundToggle">🔇 Sound Off</button>
+  <canvas id="fireworks"></canvas>
+
+  <div class="diyas">
+    <div class="diya"><div class="flame"></div></div>
+    <div class="diya"><div class="flame"></div></div>
+    <div class="diya"><div class="flame"></div></div>
+    <div class="diya"><div class="flame"></div></div>
+    <div class="diya"><div class="flame"></div></div>
+  </div>
+
+<script>
+const canvas=document.getElementById('fireworks');
+const ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+window.addEventListener('resize',()=>{canvas.width=window.innerWidth; canvas.height=window.innerHeight;});
+
+function random(min,max){ return Math.random()*(max-min)+min; }
+
+// === Fireworks & Particles ===
+class Firework{
+  constructor(){ 
+    this.x=random(0,canvas.width); 
+    this.y=canvas.height; 
+    this.targetX=random(100,canvas.width-100);
+    this.targetY=random(100,canvas.height/2); 
+    this.color=`hsl(${Math.random()*360},100%,60%)`;
+    this.trail=[]; this.exploded=false;
+  }
+  update(){
+    if(!this.exploded){
+      this.trail.push({x:this.x,y:this.y});
+      if(this.trail.length>10)this.trail.shift();
+      const dx=this.targetX-this.x, dy=this.targetY-this.y;
+      this.x+=dx*0.05; this.y+=dy*0.05;
+      if(Math.abs(dy)<10){ this.explode(); this.exploded=true; }
+    }
+  }
+  explode(){ for(let i=0;i<60;i++) particles.push(new Particle(this.x,this.y,this.color)); playCrackerSound(); }
+  draw(){
+    ctx.beginPath();
+    ctx.moveTo(this.trail[0]?.x||this.x,this.trail[0]?.y||this.y);
+    for(let i=1;i<this.trail.length;i++) ctx.lineTo(this.trail[i].x,this.trail[i].y);
+    ctx.strokeStyle=this.color; ctx.lineWidth=2; ctx.stroke();
+  }
+}
+
+class Particle{
+  constructor(x,y,color){
+    this.x=x; this.y=y; this.color=color; this.size=random(2,4);
+    this.alpha=1; this.speedX=random(-5,5); this.speedY=random(-5,5); this.gravity=0.05;
+  }
+  update(){ this.x+=this.speedX; this.y+=this.speedY; this.speedY+=this.gravity; this.alpha-=0.015; }
+  draw(){ ctx.globalAlpha=this.alpha; ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fillStyle=this.color; ctx.shadowBlur=20; ctx.shadowColor=this.color; ctx.fill(); ctx.globalAlpha=1; }
+}
+
+// === Bombs (rockets) ===
+class Bomb{
+  constructor(){ this.x=random(50,canvas.width-50); this.y=canvas.height; this.targetY=random(canvas.height/4,canvas.height/2); this.color=`hsl(${random(0,360)},100%,60%)`; this.exploded=false; this.particles=[];}
+  update(){ if(!this.exploded){this.y-=5;if(this.y<=this.targetY)this.explode();}else{this.particles.forEach((p,i)=>{p.update(); if(p.alpha<=0)this.particles.splice(i,1)});}}
+  explode(){this.exploded=true; for(let i=0;i<40;i++) this.particles.push(new Particle(this.x,this.y,this.color)); playCrackerSound();}
+  draw(){ if(!this.exploded){ctx.beginPath();ctx.arc(this.x,this.y,4,0,Math.PI*2);ctx.fillStyle=this.color;ctx.fill();} else this.particles.forEach(p=>p.draw());}
+}
+
+// === Chakris (ground spinners) ===
+class Chakri{ constructor(x){ this.x=x; this.y=canvas.height-40; this.radius=10; this.angle=0; this.color=`hsl(${random(0,360)},100%,50%)`; } update(){ this.angle+=0.2; } draw(){ ctx.save(); ctx.translate(this.x,this.y); ctx.rotate(this.angle); ctx.beginPath(); ctx.arc(0,0,this.radius,0,Math.PI*2); ctx.fillStyle=this.color; ctx.shadowBlur=15; ctx.shadowColor='gold'; ctx.fill(); ctx.restore(); } }
+
+// === Floating Sparks ===
+class Spark{
+  constructor(){ this.x=random(0,canvas.width); this.y=random(0,canvas.height); this.size=random(1,3); this.alpha=random(0.1,0.8); this.speedY=random(0.2,1); this.color=`hsl(${random(0,360)},100%,70%)`; }
+  update(){ this.y+=this.speedY; if(this.y>canvas.height)this.y=0; }
+  draw(){ ctx.globalAlpha=this.alpha; ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fillStyle=this.color; ctx.shadowBlur=10; ctx.shadowColor=this.color; ctx.fill(); ctx.globalAlpha=1; }
+}
+
+// === Main animation ===
+let fireworks=[],particles=[],bombs=[],chakris=[],sparks=[];
+for(let i=0;i<6;i++) chakris.push(new Chakri(i*200+100));
+for(let i=0;i<150;i++) sparks.push(new Spark());
+
+function animate(){
+  requestAnimationFrame(animate);
+  ctx.fillStyle="rgba(0,0,0,0.2)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // Fireworks
+  if(Math.random()<0.05) fireworks.push(new Firework());
+  fireworks.forEach((f,i)=>{ f.update(); f.draw(); if(f.exploded) fireworks.splice(i,1); });
+
+  // Bombs
+  if(Math.random()<0.03) bombs.push(new Bomb());
+  bombs.forEach((b,i)=>{ b.update(); b.draw(); if(b.exploded && b.particles.length===0) bombs.splice(i,1); });
+
+  // Particles
+  particles.forEach((p,i)=>{ p.update(); p.draw(); if(p.alpha<=0) particles.splice(i,1); });
+
+  // Chakris
+  chakris.forEach(c=>{ c.update(); c.draw(); });
+
+  // Sparks
+  sparks.forEach(s=>{ s.update(); s.draw(); });
+}
+animate();
+
+// === Sound ===
+let soundOn=false;
+const soundToggle=document.getElementById("soundToggle");
+const crackerSounds=[
+  "https://cdn.pixabay.com/audio/2022/03/15/audio_09e04e43b8.mp3",
+  "https://cdn.pixabay.com/audio/2022/03/15/audio_1f9a07d9d0.mp3",
+  "https://cdn.pixabay.com/audio/2022/03/15/audio_933b6c7b41.mp3"
+];
+function playCrackerSound(){ if(soundOn){ const audio=new Audio(crackerSounds[Math.floor(Math.random()*crackerSounds.length)]); audio.volume=0.4; audio.play(); } }
+soundToggle.addEventListener("click",()=>{ soundOn=!soundOn; soundToggle.textContent=soundOn?"🔊 Sound On":"🔇 Sound Off"; });
+</script>
+</body>
+</html>
